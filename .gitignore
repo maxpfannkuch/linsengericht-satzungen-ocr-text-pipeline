@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+
+# Large generated outputs (optional; comment these out if you want to version them)
+# input_pdfs/
+# ocr/
+# txt/
+# clean/
+# dataset.txt
