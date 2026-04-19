@@ -1,52 +1,83 @@
-# Linsengericht Satzungen – KI-lesbare kommunale Rechtstexte
+# KI-lesbare Satzungen der Gemeinde Linsengericht
 
-Dieses Repository enthält maschinenlesbare Versionen kommunaler Satzungen der Gemeinde Linsengericht sowie ausgewählter hessischer Rechtstexte (z. B. HGO).
+**Pipeline zur Umwandlung kommunaler PDF-Satzungen in maschinenlesbare Texte**
 
-Die Dokumente wurden aus bildbasierten PDFs mittels OCR verarbeitet und anschließend bereinigt, strukturiert und zu einem KI-freundlichen Datensatz zusammengeführt.
+Dieses Repository enthält eine technisch aufbereitete Version kommunaler Satzungen der Gemeinde Linsengericht sowie ausgewählter hessischer Rechtstexte (z. B. HGO).
 
-Ziel ist es, kommunale Rechtsdokumente leichter zugänglich und für moderne Technologien wie semantische Suche, Retrieval-Augmented Generation (RAG) und KI-gestützte Analyse nutzbar zu machen.
+Die Dokumente wurden aus PDF-Dateien – teilweise gescannt oder bildbasiert – in strukturierte Textdateien überführt. Ziel ist es, diese Dokumente **für moderne Such- und KI-Systeme zugänglich zu machen**.
+
+Das Repository enthält sowohl:
+
+* die **verarbeiteten Texte**
+* als auch die **Pipeline**, mit der diese erzeugt wurden.
+
+Damit kann der gesamte Prozess nachvollzogen und auf andere Dokumente angewendet werden.
 
 ---
 
-# Motivation
+# Ziel des Projekts
 
-Viele kommunale Satzungen werden online ausschließlich als PDF bereitgestellt.
+Viele kommunale Satzungen werden öffentlich nur als PDF bereitgestellt.
 
 Diese PDFs sind häufig:
 
 * gescannte Dokumente
 * Bild-PDFs ohne Textlayer
-* nur begrenzt durchsuchbar
-* für KI-Systeme schwer interpretierbar
+* schwer durchsuchbar
+* für Computer schwer auswertbar
 
-Dadurch entstehen mehrere Probleme:
+Für Menschen sind sie lesbar – für Maschinen jedoch oft nicht.
 
-* Inhalte sind nicht zuverlässig maschinenlesbar
-* automatische Analyse ist kaum möglich
-* KI-gestützte Recherche funktioniert schlecht
+Dieses Projekt zeigt, wie solche Dokumente in **maschinenlesbare Textdaten** überführt werden können.
 
-Durch eine OCR-Pipeline wurden diese Dokumente daher in sauberen Text überführt.
+Die erzeugten Texte können beispielsweise genutzt werden für:
+
+* KI-gestützte Recherche über Satzungen
+* semantische Suche
+* Retrieval-Augmented-Generation (RAG)
+* Analyse kommunaler Regelwerke
+* Aufbau kommunaler Wissensdatenbanken
 
 ---
 
-# Inhalt des Repositorys
+# Überblick über die Verarbeitungspipeline
+
+Die Dokumente werden in mehreren Schritten verarbeitet:
+
+```
+PDF Dokumente
+↓
+OCR (Texterkennung)
+↓
+Extraktion von Rohtext
+↓
+Textbereinigung
+↓
+Strukturierung mit Metadaten
+↓
+Zusammenführung zu einem Datensatz
+```
+
+---
+
+# Projektstruktur
 
 ```
 original/
-    Original PDFs der Satzungen und Rechtstexte
+    Originale PDF-Dokumente
 
 results/
-    clean/
-        bereinigte KI-optimierte Einzeltexte
+    ocr/
+        durch OCR verarbeitete PDFs
 
     txt/
-        Roh-OCR-Texte
+        Rohtexte aus der OCR-Erkennung
 
-    ocr/
-        OCR-PDF Versionen
+    clean/
+        bereinigte und strukturierte Texte
 
     dataset.txt
-        Gesamtdatensatz aller Dokumente
+        zusammengeführter Gesamtdatensatz aller Dokumente
 
 scripts/
     clean_txt.py
@@ -58,52 +89,202 @@ README.md
 
 ---
 
-# Verarbeitungspipeline
+# Voraussetzungen
 
-Die Dokumente wurden mit folgender Pipeline verarbeitet.
+Für die Verarbeitung werden einige Programme benötigt.
 
-## 1 OCR der PDF-Dokumente
+Dieses Projekt wurde unter **macOS / Linux** mit einem Terminal verwendet.
 
-Werkzeuge:
+Benötigte Software:
 
-* Tesseract
+* Homebrew (Paketmanager)
+* Tesseract OCR
 * OCRmyPDF
-
-Ziel:
-
-* Bild-PDF → durchsuchbares OCR-PDF
-* Textlayer erzeugen
+* Python 3
 
 ---
 
-## 2 Extraktion des Textes
+# Installation der benötigten Software
 
-Aus den OCR-PDFs wurden Textdateien erzeugt.
+## 1 Homebrew installieren (macOS)
+
+Homebrew ist ein Paketmanager für macOS.
+
+Im Terminal ausführen:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Installation prüfen:
+
+```bash
+brew --version
+```
+
+---
+
+## 2 Tesseract OCR installieren
+
+Tesseract ist die eigentliche OCR-Engine.
+
+Installation:
+
+```bash
+brew install tesseract
+```
+
+Prüfen:
+
+```bash
+tesseract --version
+```
+
+---
+
+## 3 Sprachpakete installieren
+
+Für deutsche Dokumente:
+
+```bash
+brew install tesseract-lang
+```
+
+Danach prüfen:
+
+```bash
+tesseract --list-langs
+```
+
+Die Ausgabe sollte unter anderem enthalten:
+
+```
+deu
+eng
+```
+
+---
+
+## 4 OCRmyPDF installieren
+
+OCRmyPDF automatisiert die OCR-Verarbeitung von PDFs.
+
+Installation:
+
+```bash
+brew install ocrmypdf
+```
+
+Prüfen:
+
+```bash
+ocrmypdf --version
+```
+
+---
+
+## 5 Python installieren (falls nötig)
+
+Prüfen:
+
+```bash
+python3 --version
+```
+
+Falls Python fehlt:
+
+```bash
+brew install python
+```
+
+---
+
+# Schritt 1 – OCR der PDF-Dokumente
+
+Zunächst wird auf die PDFs eine Texterkennung angewendet.
+
+Beispiel für eine Datei:
+
+```bash
+ocrmypdf -l deu input.pdf output.pdf
+```
+
+Parameter:
+
+```
+-l deu
+```
+
+bedeutet:
+
+```
+Sprache: Deutsch
+```
+
+---
+
+## OCR für einen ganzen Ordner
+
+Wenn viele PDFs vorhanden sind:
+
+```bash
+for f in *.pdf; do
+  ocrmypdf -l deu "$f" "ocr_$f"
+done
+```
+
+Dadurch entstehen OCR-Versionen der PDFs.
+
+Diese liegen im Ordner:
+
+```
+results/ocr/
+```
+
+---
+
+# Schritt 2 – Text aus PDFs extrahieren
+
+Aus den OCR-PDFs wird anschließend der Text extrahiert.
 
 Ergebnis:
 
 ```
-txt/
+results/txt/
 ```
 
-Diese Dateien enthalten den Roh-OCR-Text.
+Diese Dateien enthalten den **Rohtext der OCR-Erkennung**.
+
+Typische Eigenschaften:
+
+* Layoutbedingte Zeilenumbrüche
+* OCR-bedingte Worttrennungen
+* ungleichmäßige Leerzeichen
 
 ---
 
-## 3 Textbereinigung
+# Schritt 3 – Textbereinigung
 
-Das Script
+Der Rohtext wird mit einem Python-Script bereinigt.
+
+Script:
 
 ```
 scripts/clean_txt.py
 ```
 
-führt folgende Schritte aus:
+Dieses Script:
 
-* Zeilenumbrüche normalisieren
-* OCR-Trennungen zusammenführen
-* Mehrfach-Leerzeichen reduzieren
-* Absätze strukturieren
+* normalisiert Zeilenumbrüche
+* entfernt OCR-bedingte Worttrennungen
+* reduziert Leerzeichen
+* erzeugt konsistente Absätze
+
+Ausführen:
+
+```bash
+python3 scripts/clean_txt.py
+```
 
 Ergebnis:
 
@@ -113,7 +294,9 @@ results/clean/
 
 ---
 
-## 4 Dokumentstruktur hinzufügen
+# Schritt 4 – Metadaten ergänzen
+
+Um Dokumente später leichter identifizieren zu können, werden Metadaten ergänzt.
 
 Script:
 
@@ -121,17 +304,29 @@ Script:
 scripts/add_header.py
 ```
 
-Ergänzt pro Datei Metadaten:
+Ausführen:
+
+```bash
+python3 scripts/add_header.py
+```
+
+Beispielstruktur eines Dokuments:
 
 ```
-DOCUMENT:
-SOURCE:
-LANGUAGE:
+DOCUMENT: Feuerwehrsatzung
+SOURCE: Feuerwehrsatzung.pdf
+LANGUAGE: de
+
+CONTENT
+
+...
 ```
 
 ---
 
-## 5 Zusammenführung zu einem Gesamtdatensatz
+# Schritt 5 – Datensatz erzeugen
+
+Alle Texte werden anschließend zu einem Gesamtdatensatz zusammengeführt.
 
 Script:
 
@@ -139,42 +334,45 @@ Script:
 scripts/merge_all.py
 ```
 
-Erzeugt:
+Ausführen:
+
+```bash
+python3 scripts/merge_all.py
+```
+
+Ergebnis:
 
 ```
 results/dataset.txt
 ```
 
-Diese Datei enthält alle Dokumente als zusammenhängenden KI-Datensatz.
+Diese Datei enthält alle Dokumente in sequenzieller Form.
 
 ---
 
-# Nutzung
+# Verwendung der erzeugten Texte
 
-Die Daten können verwendet werden für:
+Die erzeugten Texte können beispielsweise verwendet werden für:
 
-* KI-Recherche zu kommunalen Satzungen
-* semantische Suche
+* KI-gestützte Recherche über Satzungen
+* semantische Dokumentensuche
+* juristische Textanalyse
 * RAG-Systeme
-* juristische Analyse
 * kommunale Wissensdatenbanken
 
 ---
 
-# Transparenz
+# Transparenzhinweis
 
-Die Inhalte stammen aus öffentlich zugänglichen Quellen.
+Die Inhalte basieren auf öffentlich zugänglichen Dokumenten.
 
-Dieses Repository stellt **keine amtliche Fassung** dar, sondern eine maschinenlesbare Aufbereitung.
-
-Für rechtsverbindliche Fassungen sind die offiziellen Veröffentlichungen maßgeblich.
+Dieses Repository stellt **keine amtliche Veröffentlichung** dar.
+Für rechtsverbindliche Fassungen sind die offiziellen Veröffentlichungen der Gemeinde bzw. des Landes Hessen maßgeblich.
 
 ---
 
-# Ziel des Projekts
+# Hintergrund
 
-Dieses Projekt zeigt exemplarisch, wie kommunale Rechtsdokumente technisch aufbereitet werden können, um:
+Viele öffentliche Dokumente sind zwar zugänglich, aber technisch schwer nutzbar.
 
-* demokratische Transparenz zu erhöhen
-* öffentliche Dokumente besser zugänglich zu machen
-* moderne KI-Werkzeuge für kommunale Informationen nutzbar zu machen
+Dieses Projekt zeigt, wie solche Dokumente mit einfachen Werkzeugen in strukturierte Textdaten überführt werden können, die für moderne Analyse- und KI-Anwendungen geeignet sind.
