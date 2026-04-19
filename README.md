@@ -1,40 +1,37 @@
 # KI-lesbare Satzungen der Gemeinde Linsengericht
 
-**Pipeline zur Umwandlung kommunaler PDF-Satzungen in maschinenlesbare Texte**
+**Pipeline zur Umwandlung kommunaler Satzungen in maschinenlesbare Texte**
 
-Dieses Repository enthält eine technisch aufbereitete Version kommunaler Satzungen der Gemeinde Linsengericht sowie ausgewählter hessischer Rechtstexte (z. B. HGO).
+Dieses Repository dokumentiert eine vollständige technische Pipeline zur Umwandlung kommunaler Satzungen der Gemeinde Linsengericht sowie relevanter hessischer Rechtstexte (z. B. HGO) in strukturierte, maschinenlesbare Textdaten.
 
-Die Dokumente wurden aus PDF-Dateien – teilweise gescannt oder bildbasiert – in strukturierte Textdateien überführt. Ziel ist es, diese Dokumente **für moderne Such- und KI-Systeme zugänglich zu machen**.
+Neben den erzeugten Texten enthält dieses Projekt auch die **komplette Verarbeitungspipeline**, sodass der gesamte Prozess nachvollzogen und auf andere Dokumente übertragen werden kann.
 
-Das Repository enthält sowohl:
-
-* die **verarbeiteten Texte**
-* als auch die **Pipeline**, mit der diese erzeugt wurden.
-
-Damit kann der gesamte Prozess nachvollzogen und auf andere Dokumente angewendet werden.
+Die Dokumente wurden aus teilweise gescannten oder bildbasierten PDFs mithilfe von OCR in Text überführt, bereinigt und zu einem konsistenten Datensatz zusammengeführt.
 
 ---
 
 # Ziel des Projekts
 
-Viele kommunale Satzungen werden öffentlich nur als PDF bereitgestellt.
+Viele kommunale Satzungen werden online nur als PDF bereitgestellt. Diese PDFs haben häufig folgende Eigenschaften:
 
-Diese PDFs sind häufig:
+* gescannte Dokumente ohne Textlayer
+* Bild-PDFs ohne maschinenlesbaren Text
+* schlechte Durchsuchbarkeit
+* komplexe Layouts
 
-* gescannte Dokumente
-* Bild-PDFs ohne Textlayer
-* schwer durchsuchbar
-* für Computer schwer auswertbar
+Für Menschen sind diese Dokumente gut lesbar, für Maschinen jedoch schwer nutzbar.
 
-Für Menschen sind sie lesbar – für Maschinen jedoch oft nicht.
+Ziel dieses Projekts ist daher:
 
-Dieses Projekt zeigt, wie solche Dokumente in **maschinenlesbare Textdaten** überführt werden können.
+* die Inhalte maschinenlesbar zu machen
+* eine reproduzierbare Pipeline bereitzustellen
+* kommunale Rechtstexte für KI-Anwendungen nutzbar zu machen
 
-Die erzeugten Texte können beispielsweise genutzt werden für:
+Die erzeugten Daten können beispielsweise genutzt werden für:
 
-* KI-gestützte Recherche über Satzungen
-* semantische Suche
-* Retrieval-Augmented-Generation (RAG)
+* semantische Suche über Satzungen
+* KI-gestützte juristische Recherche
+* Retrieval-Augmented Generation (RAG)
 * Analyse kommunaler Regelwerke
 * Aufbau kommunaler Wissensdatenbanken
 
@@ -42,9 +39,9 @@ Die erzeugten Texte können beispielsweise genutzt werden für:
 
 # Überblick über die Verarbeitungspipeline
 
-Die Dokumente werden in mehreren Schritten verarbeitet:
+Die Dokumente werden in mehreren klar getrennten Schritten verarbeitet.
 
-```
+```text
 PDF Dokumente
 ↓
 OCR (Texterkennung)
@@ -62,11 +59,12 @@ Zusammenführung zu einem Datensatz
 
 # Projektstruktur
 
-```
+```text
 original/
     Originale PDF-Dokumente
 
 results/
+
     ocr/
         durch OCR verarbeitete PDFs
 
@@ -74,30 +72,27 @@ results/
         Rohtexte aus der OCR-Erkennung
 
     clean/
-        bereinigte und strukturierte Texte
+        bereinigte Texte
 
     dataset.txt
-        zusammengeführter Gesamtdatensatz aller Dokumente
+        zusammengeführter Gesamtdatensatz
 
 scripts/
+
     clean_txt.py
     add_header.py
     merge_all.py
-
-README.md
 ```
 
 ---
 
 # Voraussetzungen
 
-Für die Verarbeitung werden einige Programme benötigt.
-
-Dieses Projekt wurde unter **macOS / Linux** mit einem Terminal verwendet.
+Die Pipeline wurde unter macOS und Linux entwickelt und nutzt einfache Terminal-Werkzeuge.
 
 Benötigte Software:
 
-* Homebrew (Paketmanager)
+* Homebrew (macOS Paketmanager)
 * Tesseract OCR
 * OCRmyPDF
 * Python 3
@@ -106,9 +101,9 @@ Benötigte Software:
 
 # Installation der benötigten Software
 
-## 1 Homebrew installieren (macOS)
+## 1 Homebrew installieren (nur macOS)
 
-Homebrew ist ein Paketmanager für macOS.
+Homebrew ist ein Paketmanager, mit dem Software über das Terminal installiert werden kann.
 
 Im Terminal ausführen:
 
@@ -126,7 +121,7 @@ brew --version
 
 ## 2 Tesseract OCR installieren
 
-Tesseract ist die eigentliche OCR-Engine.
+Tesseract ist die eigentliche OCR-Engine zur Texterkennung.
 
 Installation:
 
@@ -134,7 +129,7 @@ Installation:
 brew install tesseract
 ```
 
-Prüfen:
+Installation prüfen:
 
 ```bash
 tesseract --version
@@ -142,15 +137,15 @@ tesseract --version
 
 ---
 
-## 3 Sprachpakete installieren
+## 3 Sprachmodelle installieren
 
-Für deutsche Dokumente:
+Für deutsche Dokumente wird das deutsche Sprachmodell benötigt.
 
 ```bash
 brew install tesseract-lang
 ```
 
-Danach prüfen:
+Verfügbare Sprachen prüfen:
 
 ```bash
 tesseract --list-langs
@@ -158,7 +153,7 @@ tesseract --list-langs
 
 Die Ausgabe sollte unter anderem enthalten:
 
-```
+```text
 deu
 eng
 ```
@@ -167,7 +162,7 @@ eng
 
 ## 4 OCRmyPDF installieren
 
-OCRmyPDF automatisiert die OCR-Verarbeitung von PDFs.
+OCRmyPDF automatisiert die Texterkennung in PDF-Dateien.
 
 Installation:
 
@@ -175,7 +170,7 @@ Installation:
 brew install ocrmypdf
 ```
 
-Prüfen:
+Installation prüfen:
 
 ```bash
 ocrmypdf --version
@@ -183,9 +178,11 @@ ocrmypdf --version
 
 ---
 
-## 5 Python installieren (falls nötig)
+## 5 Python installieren
 
-Prüfen:
+Python wird für die Verarbeitungsskripte benötigt.
+
+Version prüfen:
 
 ```bash
 python3 --version
@@ -199,86 +196,112 @@ brew install python
 
 ---
 
-# Schritt 1 – OCR der PDF-Dokumente
+# Schritt 1 – OCR durchführen und Textdateien erzeugen
 
-Zunächst wird auf die PDFs eine Texterkennung angewendet.
+Zuerst wird eine Texterkennung auf alle PDF-Dokumente angewendet.
 
-Beispiel für eine Datei:
+Dabei werden gleichzeitig erzeugt:
+
+* durchsuchbare OCR-PDFs
+* Textdateien mit dem erkannten Inhalt
+
+---
+
+## Ordnerstruktur vorbereiten
+
+Im Projektordner folgende Ordner anlegen:
 
 ```bash
-ocrmypdf -l deu input.pdf output.pdf
+mkdir -p results/ocr
+mkdir -p results/txt
 ```
 
-Parameter:
+Danach existiert:
 
-```
--l deu
-```
-
-bedeutet:
-
-```
-Sprache: Deutsch
+```text
+results/
+    ocr/
+    txt/
 ```
 
 ---
 
-## OCR für einen ganzen Ordner
+## OCR für alle PDFs durchführen
 
-Wenn viele PDFs vorhanden sind:
+Wenn sich die PDFs im aktuellen Ordner befinden, kann die OCR für alle Dateien gleichzeitig ausgeführt werden.
 
 ```bash
 for f in *.pdf; do
-  ocrmypdf -l deu "$f" "ocr_$f"
+  base="${f%.pdf}"
+
+  ocrmypdf \
+    -l deu \
+    --rotate-pages \
+    --deskew \
+    --force-ocr \
+    --sidecar "results/txt/${base}.txt" \
+    "$f" "results/ocr/$f"
+
 done
 ```
 
-Dadurch entstehen OCR-Versionen der PDFs.
+---
 
-Diese liegen im Ordner:
+## Erklärung der wichtigsten Optionen
 
-```
-results/ocr/
+`-l deu`
+verwendet das deutsche Sprachmodell.
+
+`--rotate-pages`
+erkennt automatisch gedrehte Seiten.
+
+`--deskew`
+richtet schiefe Scans aus.
+
+`--force-ocr`
+erzwingt OCR auch bei PDFs mit vorhandenem Textlayer.
+
+`--sidecar`
+erstellt gleichzeitig eine `.txt`-Datei mit dem erkannten Text.
+
+---
+
+## Ergebnis
+
+Nach Abschluss enthält der Projektordner:
+
+```text
+results/
+
+    ocr/
+        Feuerwehrsatzung.pdf
+        Gebuehrensatzung.pdf
+
+    txt/
+        Feuerwehrsatzung.txt
+        Gebuehrensatzung.txt
 ```
 
 ---
 
-# Schritt 2 – Text aus PDFs extrahieren
+# Schritt 2 – OCR-Text bereinigen
 
-Aus den OCR-PDFs wird anschließend der Text extrahiert.
+Die Rohtexte enthalten häufig Layout-Artefakte aus der OCR-Erkennung.
 
-Ergebnis:
-
-```
-results/txt/
-```
-
-Diese Dateien enthalten den **Rohtext der OCR-Erkennung**.
-
-Typische Eigenschaften:
-
-* Layoutbedingte Zeilenumbrüche
-* OCR-bedingte Worttrennungen
-* ungleichmäßige Leerzeichen
-
----
-
-# Schritt 3 – Textbereinigung
-
-Der Rohtext wird mit einem Python-Script bereinigt.
-
-Script:
+Das Script
 
 ```
 scripts/clean_txt.py
 ```
 
-Dieses Script:
+bereinigt diese automatisch.
 
-* normalisiert Zeilenumbrüche
-* entfernt OCR-bedingte Worttrennungen
-* reduziert Leerzeichen
-* erzeugt konsistente Absätze
+Es führt u. a. folgende Schritte aus:
+
+* Normalisierung von Zeilenumbrüchen
+* Zusammenführen von Worttrennungen
+* Reduktion mehrfacher Leerzeichen
+* Vereinheitlichung von Absätzen
 
 Ausführen:
 
@@ -288,15 +311,15 @@ python3 scripts/clean_txt.py
 
 Ergebnis:
 
-```
+```text
 results/clean/
 ```
 
 ---
 
-# Schritt 4 – Metadaten ergänzen
+# Schritt 3 – Metadaten ergänzen
 
-Um Dokumente später leichter identifizieren zu können, werden Metadaten ergänzt.
+Um Dokumente leichter identifizieren zu können, werden Metadaten ergänzt.
 
 Script:
 
@@ -312,7 +335,7 @@ python3 scripts/add_header.py
 
 Beispielstruktur eines Dokuments:
 
-```
+```text
 DOCUMENT: Feuerwehrsatzung
 SOURCE: Feuerwehrsatzung.pdf
 LANGUAGE: de
@@ -324,9 +347,9 @@ CONTENT
 
 ---
 
-# Schritt 5 – Datensatz erzeugen
+# Schritt 4 – Datensatz erstellen
 
-Alle Texte werden anschließend zu einem Gesamtdatensatz zusammengeführt.
+Alle bereinigten Texte werden anschließend zu einem Gesamtdatensatz zusammengeführt.
 
 Script:
 
@@ -342,7 +365,7 @@ python3 scripts/merge_all.py
 
 Ergebnis:
 
-```
+```text
 results/dataset.txt
 ```
 
@@ -350,15 +373,15 @@ Diese Datei enthält alle Dokumente in sequenzieller Form.
 
 ---
 
-# Verwendung der erzeugten Texte
+# Verwendung der erzeugten Daten
 
-Die erzeugten Texte können beispielsweise verwendet werden für:
+Der erzeugte Datensatz kann verwendet werden für:
 
-* KI-gestützte Recherche über Satzungen
-* semantische Dokumentensuche
+* semantische Suche über Satzungen
 * juristische Textanalyse
-* RAG-Systeme
-* kommunale Wissensdatenbanken
+* KI-gestützte Recherche
+* Aufbau kommunaler Wissensdatenbanken
+* RAG-basierte Chatbots
 
 ---
 
@@ -373,6 +396,6 @@ Für rechtsverbindliche Fassungen sind die offiziellen Veröffentlichungen der G
 
 # Hintergrund
 
-Viele öffentliche Dokumente sind zwar zugänglich, aber technisch schwer nutzbar.
+Viele öffentliche Dokumente sind zwar frei zugänglich, aber technisch nur eingeschränkt nutzbar.
 
-Dieses Projekt zeigt, wie solche Dokumente mit einfachen Werkzeugen in strukturierte Textdaten überführt werden können, die für moderne Analyse- und KI-Anwendungen geeignet sind.
+Dieses Projekt zeigt exemplarisch, wie solche Dokumente mit einfachen Werkzeugen in strukturierte Textdaten überführt werden können, die für moderne Analyse- und KI-Anwendungen geeignet sind.
